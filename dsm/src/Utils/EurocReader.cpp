@@ -103,10 +103,6 @@ namespace dsm
 
 		// read timestamps and images with names equal to timestamps
 		std::ifstream infile;
-
-		// todo delate below
-		// std::cout << this->timestampPath << std::endl;
-		// std::cout << imagePath << std::endl;
 		infile.open(this->timestampPath);
 		while (!infile.eof() && infile.good())
 		{
@@ -117,9 +113,7 @@ namespace dsm
 			{
 				std::size_t pos = line.find(",");
 				line = line.substr(0, pos);
-				// std::cout << (imagePath + "/" + line + ".png") << std::endl;
 				this->files.push_back(imagePath + "/" + line + ".png");
-				// std::cout << line << std::endl;
 				this->timestamps.push_back(std::atof(line.c_str()) / 1e9); // transform to seconds
 			}
 		}

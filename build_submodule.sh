@@ -34,16 +34,13 @@ COMMON_CMAKE_ARGS=(
 )
 
 BUILD_CERES=thirdparty/build-ceres-solver
-# BUILD_PANGOLIN=thirdparty/build-Pangolin
-# BUILD_OPENGV=thirdparty/build-opengv
 
 
-git submodule sync --recursive
-git submodule update --init --recursive
+# git submodule sync --recursive
+# git submodule update --init --recursive
 
 rm -rf "$BUILD_CERES"
-# rm -rf "$BUILD_PANGOLIN"
-# rm -rf "$BUILD_OPENGV"
+
 
 mkdir -p "$BUILD_CERES"
 pushd "$BUILD_CERES"
