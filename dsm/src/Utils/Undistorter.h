@@ -34,27 +34,26 @@ namespace dsm
 	class DSM_EXPORTS_DLL Undistorter
 	{
 	public:
-
-		Undistorter(const std::string& calibFilename);
+		Undistorter(const std::string &calibFilename);
 
 		~Undistorter();
 
 		// main undistortion function
-		void undistort(const cv::Mat& image, cv::Mat& result) const;
+		void undistort(const cv::Mat &image, cv::Mat &result) const;
 
 		// camera intrinsic paramaters of original image
-		const cv::Mat& getOriginalK() const;
+		const cv::Mat &getOriginalK() const;
 
 		// distortion parameters of original image
-		const cv::Mat& getDist() const;
+		const cv::Mat &getDist() const;
 
 		// camera intrinsic parameters of undistorted image
-		const cv::Mat& getK() const;
+		const cv::Mat &getK() const;
 
 		// original image size
 		int getInputWidth() const;
 		int getInputHeight() const;
-		
+
 		// undistorted image size
 		int getOutputWidth() const;
 		int getOutputHeight() const;
@@ -63,7 +62,6 @@ namespace dsm
 		bool isValid() const;
 
 	private:
-
 		cv::Mat K_;
 		cv::Mat originalK_;
 		cv::Mat distCoeffs_;

@@ -30,12 +30,13 @@
 
 namespace dsm
 {
-	EurocReader::EurocReader(const std::string &imageFolder, const std::string &timestampFile, bool reverse) :
-		imagePath(imageFolder), timestampPath(timestampFile), id(0), inc(reverse ? -1 : 1)
-	{}
+	EurocReader::EurocReader(const std::string &imageFolder, const std::string &timestampFile, bool reverse) : imagePath(imageFolder), timestampPath(timestampFile), id(0), inc(reverse ? -1 : 1)
+	{
+	}
 
 	EurocReader::~EurocReader()
-	{}
+	{
+	}
 
 	bool EurocReader::open()
 	{
@@ -62,8 +63,10 @@ namespace dsm
 
 	void EurocReader::reset()
 	{
-		if (this->inc > 0) this->id = 0;
-		else this->id = (int)this->files.size() - 1;
+		if (this->inc > 0)
+			this->id = 0;
+		else
+			this->id = (int)this->files.size() - 1;
 	}
 
 	bool EurocReader::isOpened() const
@@ -73,6 +76,7 @@ namespace dsm
 
 	bool EurocReader::read(cv::Mat &img, double &timestamp)
 	{
+		// MARK read imgs
 		if (this->id < this->files.size() && this->id >= 0)
 		{
 			img = cv::imread(this->files[this->id], cv::IMREAD_UNCHANGED);
@@ -99,6 +103,10 @@ namespace dsm
 
 		// read timestamps and images with names equal to timestamps
 		std::ifstream infile;
+
+		// todo delate below
+		// std::cout << this->timestampPath << std::endl;
+		// std::cout << imagePath << std::endl;
 		infile.open(this->timestampPath);
 		while (!infile.eof() && infile.good())
 		{
@@ -107,8 +115,12 @@ namespace dsm
 
 			if (!line.empty())
 			{
+				std::size_t pos = line.find(",");
+				line = line.substr(0, pos);
+				// std::cout << (imagePath + "/" + line + ".png") << std::endl;
 				this->files.push_back(imagePath + "/" + line + ".png");
-				this->timestamps.push_back(std::atof(line.c_str()) / 1e9);		// transform to seconds
+				// std::cout << line << std::endl;
+				this->timestamps.push_back(std::atof(line.c_str()) / 1e9); // transform to seconds
 			}
 		}
 
@@ -120,6 +132,7 @@ namespace dsm
 		{
 			this->timestamps.clear();
 			this->files.clear();
+			std::cout << "NOOOOOOOT good" << std::endl;
 		}
 
 		return false;

@@ -33,8 +33,7 @@
 
 namespace dsm
 {
-	Undistorter::Undistorter(const std::string& calibFilename) :
-		valid(false)
+	Undistorter::Undistorter(const std::string &calibFilename) : valid(false)
 	{
 		std::cout << "Reading Calibration from file: " << calibFilename << "\n";
 
@@ -57,7 +56,7 @@ namespace dsm
 
 		// first line: camera parameters
 		size_t count = 1;
-		std::array<double, 12> inputCalibration;		// max 12 params
+		std::array<double, 12> inputCalibration; // max 12 params
 		iss1 >> inputCalibration[count - 1];
 		while (std::istream::goodbit == iss1.rdstate())
 		{
@@ -84,14 +83,12 @@ namespace dsm
 		if (iss2 >> this->in_width >> this->in_height)
 		{
 			std::cout << "Input resolution: " << this->in_width << ", " << this->in_height << std::endl;
-			std::cout << "Input calibration: " << this->originalK_.at<double>(0, 0) << " " << this->originalK_.at<double>(1, 1) << " " << 
-												  this->originalK_.at<double>(0, 2) << " " << this->originalK_.at<double>(1, 2);
+			std::cout << "Input calibration: " << this->originalK_.at<double>(0, 0) << " " << this->originalK_.at<double>(1, 1) << " " << this->originalK_.at<double>(0, 2) << " " << this->originalK_.at<double>(1, 2);
 			for (int i = 0; i < numDistortionParams; ++i)
 			{
 				std::cout << " " << this->distCoeffs_.at<double>(i, 0);
 			}
 			std::cout << std::endl;
-
 		}
 		else
 		{
@@ -119,31 +116,31 @@ namespace dsm
 		cv::initUndistortRectifyMap(this->originalK_, this->distCoeffs_, cv::Mat(), this->K_,
 									cv::Size(this->out_width, this->out_height), CV_32F, this->mapx, this->mapy);
 
-		std::cout << "Output calibration: " << this->K_.at<double>(0, 0) << " " << this->K_.at<double>(1, 1) << " " << 
-											   this->K_.at<double>(0, 2) << " " << this->K_.at<double>(1, 2) << std::endl;
+		std::cout << "Output calibration: " << this->K_.at<double>(0, 0) << " " << this->K_.at<double>(1, 1) << " " << this->K_.at<double>(0, 2) << " " << this->K_.at<double>(1, 2) << std::endl;
 
 		valid = true;
 	}
 
 	Undistorter::~Undistorter()
-	{}
+	{
+	}
 
-	void Undistorter::undistort(const cv::Mat& image, cv::Mat& result) const
+	void Undistorter::undistort(const cv::Mat &image, cv::Mat &result) const
 	{
 		cv::remap(image, result, this->mapx, this->mapy, cv::INTER_LINEAR);
 	}
 
-	const cv::Mat& Undistorter::getOriginalK() const
+	const cv::Mat &Undistorter::getOriginalK() const
 	{
 		return this->originalK_;
 	}
 
-	const cv::Mat& Undistorter::getDist() const
+	const cv::Mat &Undistorter::getDist() const
 	{
 		return this->distCoeffs_;
 	}
 
-	const cv::Mat& Undistorter::getK() const
+	const cv::Mat &Undistorter::getK() const
 	{
 		return this->K_;
 	}

@@ -29,15 +29,15 @@
 #include <cmath>
 
 #ifdef WIN32
-	#include <windows.h>
+#include <windows.h>
 #endif
 
 #ifdef __APPLE__
-	#include <OpenGL/gl.h>
-	#include <OpenGL/glu.h>
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
 #else
-	#include <GL/gl.h>
-	#include <GL/glu.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #endif
 
 #include <QFileDialog>
@@ -46,17 +46,16 @@
 
 namespace dsm
 {
-	QtWindow::QtWindow(QtVisualizer& outWrapper, QWidget *parent) :
-		QMainWindow(parent),
-		outputWrapper(outWrapper),
-		imgWidget(nullptr),
-		procWidget(nullptr),
-		VRWidget(nullptr),
-		renderTimer(nullptr),
-		doPlay(false),
-		doReset(false),
-		imgWidth(0),
-		imgHeight(0)
+	QtWindow::QtWindow(QtVisualizer &outWrapper, QWidget *parent) : QMainWindow(parent),
+																	outputWrapper(outWrapper),
+																	imgWidget(nullptr),
+																	procWidget(nullptr),
+																	VRWidget(nullptr),
+																	renderTimer(nullptr),
+																	doPlay(false),
+																	doReset(false),
+																	imgWidth(0),
+																	imgHeight(0)
 	{
 		std::cout << "Qt version " << QT_VERSION_STR << std::endl;
 
@@ -69,9 +68,9 @@ namespace dsm
 		this->statusBar()->setStyleSheet("background-color:white;");
 
 		QString buttonStyle = "QPushButton{border-radius:10px;border:white;background-color:white;}"
-			"QPushButton:hover{border-radius:10px;background-color:rgb(220,220,220);}"
-			"QPushButton:pressed{border-style:outset;border-width:1px;border-radius:10px;border-color:rgb(200,200,200);background-color:rgb(220,220,220);}"
-			"QPushButton:checked{border-style:outset;border-width:1px;border-radius:10px;border-color:rgb(200,200,200);background-color:rgb(220,220,220);}";
+							  "QPushButton:hover{border-radius:10px;background-color:rgb(220,220,220);}"
+							  "QPushButton:pressed{border-style:outset;border-width:1px;border-radius:10px;border-color:rgb(200,200,200);background-color:rgb(220,220,220);}"
+							  "QPushButton:checked{border-style:outset;border-width:1px;border-radius:10px;border-color:rgb(200,200,200);background-color:rgb(220,220,220);}";
 
 		ui.playButton->setStyleSheet(buttonStyle);
 		ui.resetButton->setStyleSheet(buttonStyle);
@@ -121,7 +120,7 @@ namespace dsm
 
 		// threshold sliders
 		ui.varSlider->setTracking(true);
-		ui.varSlider->setRange(0, 100);		// slider works with integers
+		ui.varSlider->setRange(0, 100); // slider works with integers
 		ui.parSlider->setTracking(true);
 		ui.parSlider->setRange(0, 100);
 
@@ -135,7 +134,7 @@ namespace dsm
 		ui.parSlider->setValue(parValue);
 
 		this->outputWrapper.setVarThreshold(pow(10.f, varThreshold));
-		this->outputWrapper.setParThreshold(cos(parThreshold*(float)M_PI / 180.f));
+		this->outputWrapper.setParThreshold(cos(parThreshold * (float)M_PI / 180.f));
 
 		// scale slider
 		ui.scaleSlider->setTracking(true);
@@ -152,7 +151,7 @@ namespace dsm
 		// VR widget (parent)
 		this->VRWidget = new GLWidget(this);
 		this->VRWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-		
+
 		// input image widget (child)
 		this->imgWidget = new GLWidget(this->VRWidget);
 
@@ -180,13 +179,13 @@ namespace dsm
 
 		// use a QTimer for VR and StatusBar updates
 		this->renderTimer = new QTimer(this);
-		this->renderTimer->setInterval(50);		// 20 fps
+		this->renderTimer->setInterval(50); // 20 fps
 
 		//render VR -> pointcloud, octree, keyframes, camera
-		QObject::connect(this->renderTimer, SIGNAL(timeout()), this->VRWidget, SLOT(update()));		// QueuedConnection not required
+		QObject::connect(this->renderTimer, SIGNAL(timeout()), this->VRWidget, SLOT(update())); // QueuedConnection not required
 
 		//timings & other information
-		QObject::connect(this->renderTimer, SIGNAL(timeout()), this, SLOT(updateStatusBar()));		// QueuedConnection not required
+		QObject::connect(this->renderTimer, SIGNAL(timeout()), this, SLOT(updateStatusBar())); // QueuedConnection not required
 		// --------------------------------------------------------------------------------------------------
 
 		// --------------------------------------------------------------------------------------------------
@@ -360,7 +359,7 @@ namespace dsm
 		// interpolate values from 0:100 (int) to 0:90 (degrees float)
 		// threshold = cos(degrees)
 		float pValue = value * (90.f / 100.f);
-		this->outputWrapper.setParThreshold(cos(pValue*(float)M_PI / 180.f));
+		this->outputWrapper.setParThreshold(cos(pValue * (float)M_PI / 180.f));
 
 		//std::cout << "Sliding parallax: " << pValue << " degrees" << std::endl;
 	}
@@ -388,14 +387,16 @@ namespace dsm
 
 	void QtWindow::changeImgSizes()
 	{
-		if (this->imgWidth == 0 || this->imgHeight == 0) return;
+		if (this->imgWidth == 0 || this->imgHeight == 0)
+			return;
 
 		// parent size
-		const auto& parentSize = this->VRWidget->size();
+		const auto &parentSize = this->VRWidget->size();
 
 		// new size
 		float w = parentSize.width() / 4;
-		if (w < 160) w = 160;
+		if (w < 160)
+			w = 160;
 		float h = this->imgRatio * w;
 
 		// resize image widget
@@ -418,7 +419,7 @@ namespace dsm
 		glEnable(GL_LIGHTING);
 		glEnable(GL_COLOR_MATERIAL);
 
-		std::array<float, 4> illumination = { -1.f, 1.f, 1.f, 0.f };
+		std::array<float, 4> illumination = {-1.f, 1.f, 1.f, 0.f};
 
 		// Directional light
 		glLightfv(GL_LIGHT0, GL_POSITION, illumination.data());
@@ -433,26 +434,26 @@ namespace dsm
 		this->VRWidget->makeCurrent();
 
 		glMatrixMode(GL_PROJECTION);
-			glPushMatrix();
-			glLoadIdentity();
-			GLint viewport[4];
-			glGetIntegerv(GL_VIEWPORT, viewport);
-			gluPerspective(45, (float)viewport[2] / viewport[3], 0.001, 1000);
+		glPushMatrix();
+		glLoadIdentity();
+		GLint viewport[4];
+		glGetIntegerv(GL_VIEWPORT, viewport);
+		gluPerspective(45, (float)viewport[2] / viewport[3], 0.001, 1000);
 		glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-			glLoadIdentity();
+		glPushMatrix();
+		glLoadIdentity();
 
-			float scale = this->outputWrapper.getCamScale();
+		float scale = this->outputWrapper.getCamScale();
 
-			// use mouse interface
-			this->VRWidget->applyMouseTransform(scale);
+		// use mouse interface
+		this->VRWidget->applyMouseTransform(scale);
 
-			//outputwrapper rendering
-			this->outputWrapper.renderOpenGL();
+		//outputwrapper rendering
+		this->outputWrapper.renderOpenGL();
 
-			glPopMatrix();
+		glPopMatrix();
 		glMatrixMode(GL_PROJECTION);
-			glPushMatrix();
+		glPushMatrix();
 		glMatrixMode(GL_MODELVIEW);
 
 		glFlush();
@@ -465,7 +466,3 @@ namespace dsm
 		this->outputWrapper.renderDebugWindows(id);
 	}
 }
-
-
-
-

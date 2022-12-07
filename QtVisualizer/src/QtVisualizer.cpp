@@ -39,8 +39,7 @@
 
 namespace dsm
 {
-	QtVisualizer::QtVisualizer(const QApplication& anApp) :
-		app(anApp)
+	QtVisualizer::QtVisualizer(const QApplication &anApp) : app(anApp)
 	{
 		this->liveImgTextureId = -1;
 		this->procImgTextureId = -1;
@@ -65,12 +64,12 @@ namespace dsm
 		this->app.setAttribute(Qt::AA_UseDesktopOpenGL);
 
 		this->mainWindow = std::make_unique<QtWindow>(*this);
-		this->mainWindow->show();						//initialize everything! OpenGL rendering context too!
+		this->mainWindow->show(); //initialize everything! OpenGL rendering context too!
 	}
 
 	QtVisualizer::~QtVisualizer()
 	{
-		cv::destroyAllWindows();	
+		cv::destroyAllWindows();
 	}
 
 	void QtVisualizer::run()
@@ -165,20 +164,23 @@ namespace dsm
 				cs = this->camScale;
 			}
 
-			dsm::drawAxis(0.2f*cs, 3.f);
+			dsm::drawAxis(0.2f * cs, 3.f);
 		}
 
 		//covisibility between keyframes
-		if (this->mainWindow->getShowCovisibility()) this->renderCovisibility();
+		if (this->mainWindow->getShowCovisibility())
+			this->renderCovisibility();
 
 		// trajectory
-		if (this->mainWindow->getShowTrajectory()) this->renderTrajectory();
+		if (this->mainWindow->getShowTrajectory())
+			this->renderTrajectory();
 
 		// render keyframes and pointcloud
 		this->renderKeyframes();
 
 		//current camera pose
-		if (this->mainWindow->getShowCamera()) this->renderCamera();
+		if (this->mainWindow->getShowCamera())
+			this->renderCamera();
 
 		std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
 
@@ -288,6 +290,7 @@ namespace dsm
 
 	void QtVisualizer::publishLiveFrame(const cv::Mat &image)
 	{
+		// printf("publishING LiveFrame\n");
 		std::lock_guard<std::mutex> lock(this->imgMutex);
 		image.copyTo(this->cameraImage);
 		emit updateARWidget();
@@ -326,7 +329,7 @@ namespace dsm
 		this->currentFrame.setZero();
 	}
 
-	void QtVisualizer::publishKeyframe(const std::shared_ptr<dsm::Frame>& keyframe, KeyframeType type)
+	void QtVisualizer::publishKeyframe(const std::shared_ptr<dsm::Frame> &keyframe, KeyframeType type)
 	{
 		std::lock_guard<std::mutex> lock(this->keyframeMutex);
 
@@ -342,7 +345,7 @@ namespace dsm
 		this->idToKeyframes[keyframe->keyframeID()]->compute(keyframe, type);
 	}
 
-	void QtVisualizer::publishKeyframeType(const std::shared_ptr<dsm::Frame>& keyframe, KeyframeType type)
+	void QtVisualizer::publishKeyframeType(const std::shared_ptr<dsm::Frame> &keyframe, KeyframeType type)
 	{
 		std::lock_guard<std::mutex> lock(this->keyframeMutex);
 
@@ -363,13 +366,13 @@ namespace dsm
 	void QtVisualizer::resetKeyframeTypes()
 	{
 		std::lock_guard<std::mutex> lock(this->keyframeMutex);
-		for (auto& kf : this->keyframes)
+		for (auto &kf : this->keyframes)
 		{
 			kf->computeType(KeyframeType::NONE);
 		}
 	}
 
-	void QtVisualizer::publishCovisibility(const Eigen::MatrixXi& adjacencyMatrix)
+	void QtVisualizer::publishCovisibility(const Eigen::MatrixXi &adjacencyMatrix)
 	{
 		std::lock_guard<std::mutex> lock(this->covisibilityMutex);
 		this->covisibility = adjacencyMatrix;
@@ -398,18 +401,18 @@ namespace dsm
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();
 
-				// pose
-				glMultMatrixf(pose.data());
+			// pose
+			glMultMatrixf(pose.data());
 
-				// scale
-				float cs;
-				{
-					std::lock_guard<std::mutex> lock(this->scaleMutex);
-					cs = this->camScale;
-				}
+			// scale
+			float cs;
+			{
+				std::lock_guard<std::mutex> lock(this->scaleMutex);
+				cs = this->camScale;
+			}
 
-				// render camera
-				dsm::drawCamera(0.1f*cs, 1.5f, Eigen::Vector3f(1.f, 0.f, 0.f), 1.f);
+			// render camera
+			dsm::drawCamera(0.1f * cs, 1.5f, Eigen::Vector3f(1.f, 0.f, 0.f), 1.f);
 
 			glPopMatrix();
 		}
@@ -432,7 +435,8 @@ namespace dsm
 		for (int i = 0; i < this->keyframes.size(); ++i)
 		{
 			// update only 10 keyframes each time
-			if (!(numUpdated < 10)) break;
+			if (!(numUpdated < 10))
+				break;
 
 			// update rendering data if required
 			if (this->keyframes[i]->update(varianceThreshold, parallaxThreshold))
@@ -452,7 +456,6 @@ namespace dsm
 			cs = this->camScale;
 			ps = this->pointScale;
 		}
-		
 
 		for (int i = 0; i < this->keyframes.size(); ++i)
 		{
@@ -466,12 +469,12 @@ namespace dsm
 				this->keyframes[i]->drawCamera(cs, false);
 			}
 			else if (this->mainWindow->getShowActiveKeyframes() &&
-					(this->keyframes[i]->getType() == dsm::KeyframeType::COVISIBILITY || 
-					 this->keyframes[i]->getType() == dsm::KeyframeType::TEMPORAL))
+					 (this->keyframes[i]->getType() == dsm::KeyframeType::COVISIBILITY ||
+					  this->keyframes[i]->getType() == dsm::KeyframeType::TEMPORAL))
 			{
 				this->keyframes[i]->drawCamera(cs, true);
 			}
-			
+
 			// pointcloud
 			if (this->mainWindow->getShowPointCloud() && this->mainWindow->getShowLocalPointCloud())
 			{
@@ -482,8 +485,8 @@ namespace dsm
 				this->keyframes[i]->drawPointCloud(ps, false);
 			}
 			else if (this->mainWindow->getShowLocalPointCloud() &&
-					(this->keyframes[i]->getType() == dsm::KeyframeType::COVISIBILITY ||
-					this->keyframes[i]->getType() == dsm::KeyframeType::TEMPORAL))
+					 (this->keyframes[i]->getType() == dsm::KeyframeType::COVISIBILITY ||
+					  this->keyframes[i]->getType() == dsm::KeyframeType::TEMPORAL))
 			{
 				this->keyframes[i]->drawPointCloud(ps, false);
 			}
@@ -497,7 +500,8 @@ namespace dsm
 
 		const int numCameras = (int)this->keyframes.size();
 
-		if (numCameras != this->covisibility.cols()) return;
+		if (numCameras != this->covisibility.cols())
+			return;
 
 		glDisable(GL_LIGHTING);
 
@@ -516,7 +520,7 @@ namespace dsm
 		{
 			if (this->mainWindow->getShowActiveCovisibility() &&
 				(this->keyframes[i]->getType() != dsm::KeyframeType::COVISIBILITY &&
-				this->keyframes[i]->getType() != dsm::KeyframeType::TEMPORAL))
+				 this->keyframes[i]->getType() != dsm::KeyframeType::TEMPORAL))
 			{
 				continue;
 			}
@@ -525,11 +529,12 @@ namespace dsm
 
 			for (int j = i + 1; j < numCameras; ++j)
 			{
-				if (j == i) continue;
+				if (j == i)
+					continue;
 
 				if (this->mainWindow->getShowActiveCovisibility() &&
 					(this->keyframes[j]->getType() != dsm::KeyframeType::COVISIBILITY &&
-					this->keyframes[j]->getType() != dsm::KeyframeType::TEMPORAL))
+					 this->keyframes[j]->getType() != dsm::KeyframeType::TEMPORAL))
 				{
 					continue;
 				}
@@ -564,7 +569,7 @@ namespace dsm
 		// all keyframes
 		for (int i = 0; i < this->keyframes.size(); ++i)
 		{
-			const Eigen::Matrix4f& pose = this->keyframes[i]->getPose();
+			const Eigen::Matrix4f &pose = this->keyframes[i]->getPose();
 			glVertex3f(pose(0, 3), pose(1, 3), pose(2, 3));
 		}
 
@@ -576,105 +581,105 @@ namespace dsm
 		glEnable(GL_LIGHTING);
 	}
 
-	void QtVisualizer::publishPointDetector(const cv::Mat& img)
+	void QtVisualizer::publishPointDetector(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvPointDetector = img.clone();
 		emit updateCVDebugWindow(0);
 	}
 
-	void QtVisualizer::publishDistanceTransformBefore(const cv::Mat& img)
+	void QtVisualizer::publishDistanceTransformBefore(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvDistTransformBefore = img.clone();
 		emit updateCVDebugWindow(1);
 	}
 
-	void QtVisualizer::publishDistanceTransformAfter(const cv::Mat& img)
+	void QtVisualizer::publishDistanceTransformAfter(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvDistTransformAfter = img.clone();
 		emit updateCVDebugWindow(2);
 	}
 
-	void QtVisualizer::publishTrackingResult(const cv::Mat& img)
+	void QtVisualizer::publishTrackingResult(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvTrackingResult = img.clone();
 		emit updateCVDebugWindow(3);
 	}
 
-	void QtVisualizer::publishTrackingError(const cv::Mat& img)
+	void QtVisualizer::publishTrackingError(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvTrackingError = img.clone();
 		emit updateCVDebugWindow(4);
 	}
 
-	void QtVisualizer::publishTrackingWeight(const cv::Mat& img)
+	void QtVisualizer::publishTrackingWeight(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvTrackingWeight = img.clone();
 		emit updateCVDebugWindow(5);
 	}
 
-	void QtVisualizer::publishTrackingLight(const cv::Mat& img)
+	void QtVisualizer::publishTrackingLight(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvTrackingLight = img.clone();
 		emit updateCVDebugWindow(6);
 	}
 
-	void QtVisualizer::publishTrackingDistribution(const cv::Mat& img)
+	void QtVisualizer::publishTrackingDistribution(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvTrackingDist = img.clone();
 		emit updateCVDebugWindow(7);
 	}
 
-	void QtVisualizer::publishOptKeyframes(const cv::Mat& img)
+	void QtVisualizer::publishOptKeyframes(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvOptKeyframes = img.clone();
 		emit updateCVDebugWindow(8);
 	}
 
-	void QtVisualizer::publishOptError(const cv::Mat& img)
+	void QtVisualizer::publishOptError(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvOptError = img.clone();
 		emit updateCVDebugWindow(9);
 	}
 
-	void QtVisualizer::publishOptErrorDist(const cv::Mat& img)
+	void QtVisualizer::publishOptErrorDist(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvOptErrorDist = img.clone();
 		emit updateCVDebugWindow(10);
 	}
 
-	void QtVisualizer::publishOptErrorDistLast(const cv::Mat& img)
+	void QtVisualizer::publishOptErrorDistLast(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvOptErrorDistLast = img.clone();
 		emit updateCVDebugWindow(11);
 	}
 
-	void QtVisualizer::publishOptRawError(const cv::Mat& img)
+	void QtVisualizer::publishOptRawError(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvOptRawError = img.clone();
 		emit updateCVDebugWindow(12);
 	}
 
-	void QtVisualizer::publishOptWeight(const cv::Mat& img)
+	void QtVisualizer::publishOptWeight(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvOptWeight = img.clone();
 		emit updateCVDebugWindow(13);
 	}
 
-	void QtVisualizer::publishOptLight(const cv::Mat& img)
+	void QtVisualizer::publishOptLight(const cv::Mat &img)
 	{
 		std::lock_guard<std::mutex> lock(this->cvDebugMutex);
 		this->cvOptLight = img.clone();
@@ -804,12 +809,13 @@ namespace dsm
 			}
 		default:
 			break;
-		}		
+		}
 	}
 
-	void QtVisualizer::saveReconstruction(const std::string& fileName)
+	void QtVisualizer::saveReconstruction(const std::string &fileName)
 	{
-		if (fileName.empty()) return;
+		if (fileName.empty())
+			return;
 
 		std::lock_guard<std::mutex> lock(this->keyframeMutex);
 
@@ -820,15 +826,15 @@ namespace dsm
 		for (int i = 0; i < this->keyframes.size(); ++i)
 		{
 			// get data in camera frame
-			const auto& kfPC = this->keyframes[i]->getPointCloud();
-			const auto& kfColor = this->keyframes[i]->getColors();
+			const auto &kfPC = this->keyframes[i]->getPointCloud();
+			const auto &kfColor = this->keyframes[i]->getColors();
 			const Sophus::SE3f pose(this->keyframes[i]->getPose());
 
 			// transform into world frame
 			std::vector<Eigen::Vector3f> kfPCWorld(kfPC.size());
 			for (int i = 0; i < kfPC.size(); ++i)
 			{
-				kfPCWorld[i] = pose*kfPC[i];
+				kfPCWorld[i] = pose * kfPC[i];
 			}
 
 			// insert into list

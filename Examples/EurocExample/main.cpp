@@ -48,14 +48,13 @@ namespace dsm
 	class Processor
 	{
 	public:
-
 		inline Processor() { this->shouldStop = false; }
 		inline ~Processor() { this->join(); }
 
-		inline void run(EurocReader& reader, Undistorter& undistorter, QtVisualizer& visualizer, std::string& settingsFile)
+		inline void run(EurocReader &reader, Undistorter &undistorter, QtVisualizer &visualizer, std::string &settingsFile)
 		{
 			this->processThread = std::make_unique<std::thread>(&Processor::doRun, this,
-				std::ref(reader), std::ref(undistorter), std::ref(visualizer), std::ref(settingsFile));
+																std::ref(reader), std::ref(undistorter), std::ref(visualizer), std::ref(settingsFile));
 		}
 
 		inline void join()
@@ -74,8 +73,7 @@ namespace dsm
 		}
 
 	private:
-
-		inline void doRun(EurocReader& reader, Undistorter& undistorter, QtVisualizer& visualizer, std::string& settingsFile)
+		inline void doRun(EurocReader &reader, Undistorter &undistorter, QtVisualizer &visualizer, std::string &settingsFile)
 		{
 			int id = 0;
 			cv::Mat image;
@@ -83,10 +81,11 @@ namespace dsm
 
 			const double fps = reader.fps();
 
-			const cv::Mat& cvK = undistorter.getK();
+			const cv::Mat &cvK = undistorter.getK();
 			const Eigen::Matrix3f K((Eigen::Matrix3f() << cvK.at<double>(0, 0), cvK.at<double>(0, 1), cvK.at<double>(0, 2),
-				cvK.at<double>(1, 0), cvK.at<double>(1, 1), cvK.at<double>(1, 2),
-				cvK.at<double>(2, 0), cvK.at<double>(2, 1), cvK.at<double>(2, 2)).finished());
+									 cvK.at<double>(1, 0), cvK.at<double>(1, 1), cvK.at<double>(1, 2),
+									 cvK.at<double>(2, 0), cvK.at<double>(2, 1), cvK.at<double>(2, 2))
+										.finished());
 
 			// create DSM
 			std::unique_ptr<FullSystem> DSM;
@@ -137,13 +136,13 @@ namespace dsm
 					DSM->trackFrame(id, timestamp, image.data);
 
 					// visualize image
-					visualizer.publishLiveFrame(image);
 
+					visualizer.publishLiveFrame(image);
 					// increase counter
 					++id;
 
-					// wait 
-					time = 1000.0*(cv::getTickCount() - time) / cv::getTickFrequency();
+					// wait
+					time = 1000.0 * (cv::getTickCount() - time) / cv::getTickFrequency();
 					const double delay = (1000.0 / fps) - time;
 
 					if (delay > 0.0)
@@ -166,7 +165,6 @@ namespace dsm
 		}
 
 	private:
-
 		bool shouldStop;
 
 		std::unique_ptr<std::thread> processThread;
@@ -177,7 +175,7 @@ int main(int argc, char *argv[])
 {
 	// input arguments
 	std::string imageFolder, timestampFile, calibFile, settingsFile;
-
+	printf("p1==============\n");
 	// Configuration
 	if (argc == 5)
 	{
@@ -197,19 +195,16 @@ int main(int argc, char *argv[])
 		std::cout << "The EurocExample requires at least 3 arguments: imageFolder, timestampFile, calibFile, settingsFile (optional)\n";
 		return 0;
 	}
-
 	// Initialize logging
 	google::InitGoogleLogging(argv[0]);
 	//FLAGS_logtostderr = 1;
 	//FLAGS_v = 9;
-
 	std::cout << "\n";
 
 	// Create the application before the window always!
 	// create visualizer in the main thread
 	QApplication app(argc, argv);
 	dsm::QtVisualizer visualizer(app);
-
 	std::cout << "\n";
 
 	// read calibration
@@ -231,21 +226,17 @@ int main(int argc, char *argv[])
 	}
 
 	std::cout << "\n";
-
 	// add image size to the visualizer
 	visualizer.setImageSize(undistorter.getOutputWidth(), undistorter.getOutputHeight());
 
 	// run processing in a second thread
 	dsm::Processor processor;
 	processor.run(reader, undistorter, visualizer, settingsFile);
-
 	// run main window
 	// it will block the main thread until closed
 	visualizer.run();
-
 	// join processing thread
 	processor.join();
-
 	std::cout << "Finished!" << std::endl;
 
 	return 1;
