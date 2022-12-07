@@ -1,0 +1,1 @@
+./build/bin/EurocExample data/mav0/cam0/data data/mav0/cam0/data.csv data/mav0/cam0/calib.txt 
