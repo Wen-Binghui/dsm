@@ -67,7 +67,7 @@ void LMCW::clear() {
 void LMCW::insertNewKeyframe(const std::shared_ptr<Frame>& newKeyframe) {
     // convert to keyframe and activate
     newKeyframe->evolveToKeyframe();
-    newKeyframe->activate();
+    newKeyframe->activate();  //: 改变 status -> ACTIVE
 
     // insert into the LMCW
     newKeyframe->setKeyframeID((int)this->allKeyframes_.size());
