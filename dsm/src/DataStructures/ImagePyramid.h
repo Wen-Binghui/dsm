@@ -61,18 +61,22 @@ class ImagePyramid {
 };
 
 // Implementation
-
-template <typename T>
+/**
+ * @brief 将原图片拷贝进 imagePyramid[0]
+ */
+template <typename T>  // T float
 inline ImagePyramid<T>::ImagePyramid(int numLevels,
                                      const unsigned char* const img)
     : levels(numLevels),
       imagePyramid(numLevels, nullptr),
       valid(numLevels, false) {
-    const auto& calib = GlobalCalibration::getInstance();
+    const auto& calib =
+        GlobalCalibration::getInstance();  //: 静态变量，之前设置过
     const int32_t width = calib.width(0);
     const int32_t height = calib.height(0);
 
     // copy zero lvl image
+    //: 获取全局buffer中的一块
     this->imagePyramid[0] =
         BufferPool<T>::getInstance().popBuffer(width * height);
 

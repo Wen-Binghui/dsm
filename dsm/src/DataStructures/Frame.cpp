@@ -47,11 +47,11 @@ Frame::Frame(int id, double timestamp, unsigned char* image)
     const auto& settings = Settings::getInstance();
     const auto& calib = GlobalCalibration::getInstance();
 
-    // image pyramids
+    // image pyramids (//!特点: 一直用一块内存)
     this->images_ =
         std::make_unique<ImagePyramid<float>>(calib.levels(), image);
 
-    // gradient pyramids
+    // gradient pyramids //: 这里只初始化复制了下 images_
     this->gradients_ = std::make_unique<GradientPyramid<float>>(calib.levels(),
                                                                 *this->images_);
 
