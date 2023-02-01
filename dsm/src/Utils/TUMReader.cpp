@@ -83,6 +83,21 @@ bool TUMReader::read(cv::Mat& img, double& timestamp) {
     return false;
 }
 
+bool TUMReader::read_depth(cv::Mat& depth_img) {
+    // MARK read imgs
+    if (this->id < this->depth_files.size() && this->id >= 0) {
+        // std::cout << this->files[this->id] << std::endl;
+        depth_img =
+            cv::imread(this->depth_files[this->id], cv::IMREAD_ANYDEPTH);
+
+        this->id += this->inc;
+
+        return true;
+    }
+
+    return false;
+}
+
 double TUMReader::fps() const { return this->fps_; }
 
 bool TUMReader::readImageNames() {

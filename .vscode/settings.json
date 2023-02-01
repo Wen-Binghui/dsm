@@ -73,6 +73,13 @@
         "bit": "cpp",
         "*.ipp": "cpp",
         "mixinvector": "cpp",
-        "fast_back_stack": "cpp"
+        "fast_back_stack": "cpp",
+        "bufferobject": "cpp",
+        "camera": "cpp",
+        "cullsettings": "cpp",
+        "displaysettings": "cpp",
+        "graphicscontext": "cpp",
+        "shader": "cpp",
+        "texture": "cpp"
     }
 }

@@ -25,6 +25,7 @@ class DSM_EXPORTS_DLL TUMReader {
 
     // reads next image
     bool read(cv::Mat& img, double& timestamp);
+    bool read_depth(cv::Mat& img);
 
     // sequence frames per second
     double fps() const;

@@ -49,7 +49,7 @@ class Processor {
     inline void doRun(TUMReader& reader, Undistorter& undistorter,
                       QtVisualizer& visualizer, std::string& settingsFile) {
         int id = 0;
-        cv::Mat image;
+        cv::Mat image, depth_image;
         double timestamp;
 
         const double fps = reader.fps();
@@ -75,7 +75,7 @@ class Processor {
                 id = 0;
                 timestamp = 0;
                 image.release();
-
+                depth_image.release();
                 // reset visualizer
                 visualizer.reset();
 
@@ -84,7 +84,8 @@ class Processor {
             }
 
             // capture
-            if (visualizer.getDoProcessing() && reader.read(image, timestamp)) {
+            if (visualizer.getDoProcessing() && reader.read(image, timestamp) &&
+                reader.read_depth(depth_image)) {
                 double time = (double)cv::getTickCount();
 
                 // gray image from source
@@ -92,8 +93,19 @@ class Processor {
                     cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);  //: 转黑白
                 }
 
+                // gray image from source
+                if (depth_image.channels() != 1) {
+                    std::cout << "Loaded depth image has too many channels.\n"
+                              << std::endl;
+                }
+
                 // undistort
-                undistorter.undistort(image, image);  // !还可以这样...
+                undistorter.undistort(image, image);  //: 去畸变
+                undistorter.undistort(depth_image, depth_image);
+                depth_image.convertTo(depth_image, CV_32F);
+
+                // std::cerr << (float)depth_image.ptr<float>(10)[10] / 5000.0
+                //           << std::endl;
 
                 if (DSM == nullptr) {  //: 创建 FullSystem
                     DSM = std::make_unique<FullSystem>(

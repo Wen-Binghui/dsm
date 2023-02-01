@@ -1055,7 +1055,7 @@ void FullSystem::createKeyframeAndOptimize(
         log.addCurrentLog(frame->frameID(), msg);
     }
 
-    // select window
+    // TODO select window PBA!!!
     this->lmcw->selectWindow(this->ceresOptimizer);
 
     // refine candidates from the temporal window
