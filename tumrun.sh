@@ -1,0 +1,1 @@
+./build/bin/TumExample /home/wbh/datasets/tum_rgbd/rgbd_dataset_freiburg1_xyz/ /home/wbh/datasets/tum_rgbd/rgbd_dataset_freiburg1_xyz/ass_rgb_depth.txt /home/wbh/datasets/tum_rgbd/freiburg1_calib.txt 
