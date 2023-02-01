@@ -71,10 +71,8 @@ bool TUMReader::isOpened() const { return (this->files.size() > 0); }
 bool TUMReader::read(cv::Mat& img, double& timestamp) {
     // MARK read imgs
     if (this->id < this->files.size() && this->id >= 0) {
-        printf("reading..\n");
-        std::cout << this->files[this->id] << std::endl;
+        // std::cout << this->files[this->id] << std::endl;
         img = cv::imread(this->files[this->id], cv::IMREAD_UNCHANGED);
-        printf("read..\n");
         timestamp = this->timestamps[this->id];
 
         this->id += this->inc;
@@ -96,17 +94,25 @@ bool TUMReader::readImageNames() {
     std::ifstream infile;
     infile.open(this->timestampPath);
     while (!infile.eof() && infile.good()) {
-        std::string line, line_rgb, line_time_, rgb_file_name;
+        std::string line, line_rgb, line_time_, line_depth, rgb_file_name,
+            depth_file_name;
         std::getline(infile, line);
 
         if (!line.empty()) {
             std::size_t pos = line.find(";");
             line_rgb = line.substr(0, pos);
+            line_depth = line.substr(pos + 1, line.size() - 1);
             std::size_t pos_rgb_space = line_rgb.find(" ");
+            std::size_t pos_depth_space = line_depth.find(" ");
             line_time_ = line_rgb.substr(0, pos_rgb_space);
             rgb_file_name = line_rgb.substr(pos_rgb_space + 1, pos);
-            std::cout << rgb_file_name << std::endl;
+            depth_file_name =
+                line_depth.substr(pos_depth_space + 1, line_depth.size() - 1);
+
             this->files.push_back(imagePath + "/" + rgb_file_name);
+            this->depth_files.push_back(imagePath + "/" + depth_file_name);
+
+            // std::cout << depth_file_name << std::endl;
 
             this->timestamps.push_back(std::atof(line_time_.c_str()) /
                                        1e9);  // transform to seconds
@@ -119,7 +125,7 @@ bool TUMReader::readImageNames() {
     } else {
         this->timestamps.clear();
         this->files.clear();
-        std::cout << "NOOOOOOOT good" << std::endl;
+        std::cout << "this->timestamps.size() == 0" << std::endl;
     }
 
     return false;
