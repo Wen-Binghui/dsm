@@ -111,6 +111,7 @@ int PointDetector::detect(const std::shared_ptr<Frame>& frame, int numPoints,
     // smooth threshold map to obtain more point on
     // edges than in white walls
     this->smoothThresholdMap();
+    //: this->thresholdMap 完全得到, 大小 numBlockWidth X numBlockHeight；
 
     Utils::Time t1 = std::chrono::steady_clock::now();
 
@@ -120,7 +121,7 @@ int PointDetector::detect(const std::shared_ptr<Frame>& frame, int numPoints,
     int numSelected = 0;
 
     for (int it = 0; it <= 1; ++it) {
-        // reset mask
+        // reset mask //: 全部填充-1
         std::fill(mask, mask + this->width[0] * this->height[0], -1);
         numSelected = 0;
 
@@ -160,7 +161,10 @@ int PointDetector::detect(const std::shared_ptr<Frame>& frame, int numPoints,
         }
 
         // change heuristically the window size based on the density
-        const float ratioOfSucces = static_cast<float>(numSelected) / numPoints;
+        const float ratioOfSucces =
+            static_cast<float>(numSelected) / numPoints;  //: <1
+
+        //: window 越来越小
         this->window =
             static_cast<int>(sqrtf(ratioOfSucces) * this->window + 0.5f);
 
@@ -224,12 +228,14 @@ int PointDetector::selectPixels(const int winSize, int32_t* const mask,
     int numSelectedPoints = 0;
 
     // maximal pixel in the neighbourhood
+    //: 遍历每个窗口
     for (int y = yMin; y < yMax; y += winSize) {
         for (int x = 0; x < this->width[0]; x += winSize) {
+            //: 对(y, x)开始的窗口检测 selectMaxPixel
             numSelectedPoints += this->selectMaxPixel(y, x, winSize, mask);
         }
     }
-
+    //: mask 里是 lv ids
     return numSelectedPoints;
 }
 
@@ -237,6 +243,8 @@ int PointDetector::selectMaxPixel(const int row, const int col,
                                   const int winSize,
                                   int32_t* const mask) const {
     // num zero lvl blocks in each dimension
+    //: 每个小窗口里面 有 numFineWindows^2 个分块
+    //: (numFineWindows = 2^numPyramids), 此次固定
     const int numFineWindows = (int)1 << this->numPyramids;
     const int fineWindowSize = winSize / numFineWindows;
 
@@ -250,10 +258,15 @@ int PointDetector::selectMaxPixel(const int row, const int col,
                                   salientPixels);
 
     // select best candidates
+    // 所有小窗中最大的一个 ids
     return this->selectBestPixel(salientPixels, 0, 0, numFineWindows,
                                  this->numPyramids, mask);
 }
 
+/**
+ * @brief 找到最每个小窗梯度最大的pixel， 存入 salientPixels vector
+
+*/
 void PointDetector::selectMaxPixelRecursive(
     const int oy, const int ox, const int rowIdx, const int colIdx,
     const int numFineWindows, const int fineWindowSize, const int lvl,
@@ -287,7 +300,7 @@ void PointDetector::selectMaxPixelRecursive(
     // if lvl == 0, select the max pixel
     const int x = ox + colIdx * fineWindowSize;
     const int y = oy + rowIdx * fineWindowSize;
-    const int index = colIdx + rowIdx * numFineWindows;
+    const int index = colIdx + rowIdx * numFineWindows;  // 0
 
     this->selectMaxPixelLvl(y, x, fineWindowSize, maxLvl, salientPixels[index]);
 }
@@ -415,10 +428,12 @@ void PointDetector::selectMaxPixelLvl(const int row, const int col,
 void PointDetector::calcThresholds(const float* gradMag2, int yMin, int yMax) {
     for (int row = yMin; row < yMax; ++row) {
         // skip pixels without gradient information
-        const int vInit = std::max(1, row * this->blockSizeHeight);
+        const int vInit =
+            std::max(1, row * this->blockSizeHeight);  // 一行的数据
         const int vEnd =
             std::min(vInit + this->blockSizeHeight, this->maxHeight[0]);
 
+        //: 分配每一块的大小
         for (int col = 0; col < this->numBlockWidth; ++col) {
             // reset histogram
             const int uInit = std::max(1, col * this->blockSizeWidth);
@@ -427,6 +442,7 @@ void PointDetector::calcThresholds(const float* gradMag2, int yMin, int yMax) {
 
             // obtain all gradient magnitudes in the block
             const int blockSize = (uEnd - uInit) * (vEnd - vInit);
+            // 每一个梯度方块的大小（元素数目）
             std::vector<float> allGradientMag(blockSize);
             int idx = 0;
 
@@ -438,7 +454,7 @@ void PointDetector::calcThresholds(const float* gradMag2, int yMin, int yMax) {
             for (int y = vInit; y < vEnd; ++y) {
                 const int y_idx = y * this->width[0];
                 for (int x = uInit; x < maxU; x += 4) {
-                    _mm_storeu_ps(allGradientMag.data() + idx,
+                    _mm_storeu_ps(allGradientMag.data() + idx,  // 转存4个数据
                                   _mm_loadu_ps(gradMag2 + y_idx + x));
                     idx += 4;
                 }
@@ -462,10 +478,12 @@ void PointDetector::calcThresholds(const float* gradMag2, int yMin, int yMax) {
             // compute threshold using median value plus an additive constant
             this->thresholdMapDuplication[row * this->numBlockWidth + col] =
                 sqrt(dsm::median(allGradientMag)) + this->additiveThreshold;
+            //: 3.2 Step 1: g^hat + g_th (constant 7)
         }
     }
 }
 
+// gaussian kernel 3x3
 void PointDetector::smoothThresholdMap() {
     // we will use a gaussian kernel 3x3
     for (int row = 0; row < this->numBlockHeight; ++row) {

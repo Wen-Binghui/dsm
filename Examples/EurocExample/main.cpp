@@ -165,7 +165,6 @@ class Processor {
 int main(int argc, char* argv[]) {
     // input arguments
     std::string imageFolder, timestampFile, calibFile, settingsFile;
-    printf("p1==============\n");
     // Configuration
     if (argc == 5) {
         imageFolder = argv[1];

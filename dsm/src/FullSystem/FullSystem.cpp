@@ -306,6 +306,7 @@ bool FullSystem::initialize(const std::shared_ptr<Frame>& frame) {
     const auto& allKeyframes = this->lmcw->allKeyframes();
 
     if (allKeyframes.empty()) {
+        //: 第一帧
         // insert frame as first keyframe //: parentFrame: null
         frame->setTrackingResult(nullptr, Sophus::SE3f(), AffineLight());
         this->lmcw->insertNewKeyframe(frame);

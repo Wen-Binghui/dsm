@@ -6,10 +6,10 @@ Project Description
 
 ### Todo
 
-- [ ] detect  
 
 ### In Progress
 
+- [ ] detect  
 
 ### Done ✓
 
