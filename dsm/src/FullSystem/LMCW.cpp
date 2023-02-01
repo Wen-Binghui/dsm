@@ -333,7 +333,8 @@ void LMCW::selectCovisibleWindow(
         float numVisibleFloat = (float)numVisible;
         float ratio = numVisibleFloat / kf->activePoints().size();
 
-        if (ratio > settings.minPointCovisible) {
+        if (ratio >
+            settings.minPointCovisible) {  //: 如果点数多于一定，插入 Covisible
             allCovisibleKeyframes.push_back(kf);
             numVisiblePoints.push_back(numVisible);
             numTotalVisiblePoints.push_back(numTotalVisible);
@@ -356,7 +357,7 @@ void LMCW::selectCovisibleWindow(
             allCovisibleKeyframes[position];
         selectedKeyframe->activate();
         this->activeKeyframes_.insert(this->activeKeyframes_.begin(),
-                                      selectedKeyframe);
+                                      selectedKeyframe);  //: 插到最前面
         this->numActivePoints += numTotalVisiblePoints[position];
         this->temporalWindowIndex++;
 
@@ -372,7 +373,7 @@ void LMCW::selectCovisibleWindow(
         numTotalVisiblePoints.pop_back();
         numCovisibleKeyframes--;
 
-        // early exit
+        // early exit (到了 settings.maxCovisibleKeyframes)
         if (this->temporalWindowIndex == settings.maxCovisibleKeyframes) break;
 
         // update num visible
