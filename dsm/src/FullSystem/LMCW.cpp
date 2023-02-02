@@ -429,7 +429,7 @@ void LMCW::activatePoints(
     const std::unique_ptr<CeresPhotometricBA>& photometricBA) {
     const auto& settings = Settings::getInstance();
     const auto& calib = GlobalCalibration::getInstance();
-
+    //: calib data
     const Eigen::Matrix3f& K = calib.matrix3f(0);
     const Eigen::Matrix3f& Kinv = calib.invMatrix3f(0);
     const int width = (int)calib.width(0);
@@ -471,7 +471,7 @@ void LMCW::activatePoints(
     for (int i = this->temporalWindowIndex; i < numActiveKeyframes - 1; ++i) {
         const std::shared_ptr<Frame>& owner = this->activeKeyframes_[i];
 
-        // relative pose
+        //: relative pose
         const Sophus::SE3f ownerToLast = worldToLast * owner->camToWorld();
         const Eigen::Matrix3f KRKinv = K * ownerToLast.rotationMatrix() * Kinv;
         const Eigen::Vector3f Kt = K * ownerToLast.translation();
